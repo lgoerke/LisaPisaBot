@@ -5,6 +5,8 @@
 import json 
 import requests
 import time
+import csv
+import re
 from urllib import parse
 # python3: urllib.parse.quote_plus
 # python2: urllib.pathname2url
@@ -43,12 +45,31 @@ def get_last_update_id(updates):
     return max(update_ids)
 
 
-def echo_all(updates):
+def echo_all(updates, chitchat_dict):
     for update in updates["result"]:
         if "message" in update:
             chat = update["message"]["chat"]["id"]
             if "text" in update["message"]:
-                text = update["message"]["text"]
+                # Finding out if the user has said his name
+                name_str = None
+                global name
+                match = re.findall(name,update["message"]["text"])
+                if match:
+                    for entry in match[0]:
+                        if len(entry) > 0:
+                            name_str = entry
+                    question = 'Said_name'
+                else:
+                    question = update["message"]["text"]
+
+
+                    
+                if question in chitchat_dict:
+                    text = chitchat_dict[question]
+                    if name_str is not None:
+                        text = text + ', ' + name_str
+                else:
+                    text = question
                 # Not echo
             else:
                 text = 'Stickers are not supported'
@@ -70,14 +91,26 @@ def send_message(text, chat_id):
 
 
 def main():
+    # Compile regex
+    global name
+    name = re.compile('[m|M]y name is (\w+)|[i|I] am (\w+)')
+    #r'@(\w+)
+
+    # Load chitchat dict
+    chitchat_dict = {}
+    with open('chitchat.csv') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            chitchat_dict[row['question']] = row['answer']
+
     last_update_id = None
     while True:
         updates = get_updates(last_update_id)
         if len(updates["result"]) > 0:
             last_update_id = get_last_update_id(updates) + 1
-            echo_all(updates)
+            echo_all(updates, chitchat_dict)
         # TODO change time depending on message length
-        time.sleep(3)
+        time.sleep(2)
 
 
 if __name__ == '__main__':
