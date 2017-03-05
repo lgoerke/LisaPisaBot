@@ -1,6 +1,6 @@
-question,answer
-Hello,Hey
-Hey,Hello
-Hi,Hello
-Who are you?,My name is LisaPisa, who are you?
-Said_name, Nice to meet you
+question,answer,second_answer
+Hello,Hey,qwerty
+Hey,Hello,qwerty
+Hi,Hello,qwerty
+Who are you?,My name is LisaPisa,I can help you with deciding on a movie tonight :)
+Said_name,Nice to meet you,Do you want me to help you with deciding on a movie?

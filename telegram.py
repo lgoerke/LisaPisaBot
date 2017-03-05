@@ -45,7 +45,7 @@ def get_last_update_id(updates):
     return max(update_ids)
 
 
-def echo_all(updates, chitchat_dict):
+def echo_all(updates, chitchat_dict, second_answer_dict):
     for update in updates["result"]:
         if "message" in update:
             chat = update["message"]["chat"]["id"]
@@ -63,17 +63,25 @@ def echo_all(updates, chitchat_dict):
                     question = update["message"]["text"]
 
 
-                    
+
                 if question in chitchat_dict:
                     text = chitchat_dict[question]
                     if name_str is not None:
                         text = text + ', ' + name_str
+                    if second_answer_dict[question] == 'qwerty':
+                        send_message(text, chat)
+                    else:
+                        send_message(text, chat)
+                        time.sleep(1.5)
+                        send_message(second_answer_dict[question], chat)
                 else:
                     text = question
+                    send_message(text, chat)
                 # Not echo
+
             else:
                 text = 'Stickers are not supported'
-            send_message(text, chat)
+                send_message(text, chat)
 
 
 def get_last_chat_id_and_text(updates):
@@ -98,17 +106,19 @@ def main():
 
     # Load chitchat dict
     chitchat_dict = {}
+    second_answer_dict = {}
     with open('chitchat.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             chitchat_dict[row['question']] = row['answer']
+            second_answer_dict[row['question']] = row['second_answer']
 
     last_update_id = None
     while True:
         updates = get_updates(last_update_id)
         if len(updates["result"]) > 0:
             last_update_id = get_last_update_id(updates) + 1
-            echo_all(updates, chitchat_dict)
+            echo_all(updates, chitchat_dict, second_answer_dict)
         # TODO change time depending on message length
         time.sleep(2)
 
