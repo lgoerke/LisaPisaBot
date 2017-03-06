@@ -19,7 +19,7 @@ The databases described above are loaded by reading the csv files into a python 
 In the function `echo_all` the responses from the bot are generated. First, the message from the user is checked for stickers, because they do not have a text field in the json, which will make the following procedure crash otherwise. Then, the text of the message is retrieved and checked against the regex'. If one of the chit chat situations is recognized, the related label is saved and if the user mentioned his or her name, this will also be extracted. If the user asked for the description of the movie, the movie name is saved and a flag is set, so that the user can be informed if the movie is not found in the database.
 In the following, the saved label/movie name is searched for in both databases. If a movie is found, the short plot description is returned and sent by the bot. If the label is found, the belonging answer is returned and sent by the bot.
  
-![small conversation](https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png =250x"Small Conversation Example")
+![Small Conversation Example](https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png =250x)
 
-![small conversation](https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png =250x"Small Conversation Example")
+![Small Conversation Example](https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png =250x)
 
