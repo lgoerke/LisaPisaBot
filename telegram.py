@@ -51,8 +51,8 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
         if "message" in update:
             chat = update["message"]["chat"]["id"]
             if "text" in update["message"]:
-                message = update["message"]["text"]
-                question = message
+                message = update["message"]["text"].lower()
+                question = message.lower()
 
                 # Finding out if the user has said his name
                 name_str = None
@@ -105,13 +105,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
 
                 # Search movie dict
                 if question in movie_dict:
-                    text = movie_dict[question]
-                    if second_movie_dict[question] == 'qwerty':
-                        send_message(text, chat)
-                    else:
-                        send_message(text, chat)
-                        time.sleep(1.5)
-                        send_message(second_movie_dict[question], chat)
+                    send_message(second_movie_dict[question], chat)
                 # Search chitchat dict
                 elif question in chitchat_dict:
                     text = chitchat_dict[question]
@@ -152,26 +146,26 @@ def send_message(text, chat_id):
 def main():
     # Compile regex
     global said_name
-    said_name = re.compile('[m|M]y name is (\w+)|[i|I] am (\w+)')
+    said_name = re.compile('my name is (\w+)|i am (\w+)')
     #r'@(\w+)
 
     global asked_name
-    asked_name = re.compile('[w|W]ho are you\040?\??|[w|W]hat are you\040?\??')
+    asked_name = re.compile('who are you\040?\??|what are you\040?\??')
 
     global greeting
-    greeting = re.compile('[h|H]i|[h|H]ey|[h|H]ello|[h|H]allo|[w|W]hats up')
+    greeting = re.compile('hi|hey|hello|hallo|whats up')
 
     global movie_name
-    movie_name = re.compile('[w|W]hat is (\w+[" "\w]*) about\040?\??')
+    movie_name = re.compile('what is (\w+[" "\w]*) about\040?\??')
 
     global movie_theme
-    movie_theme = re.compile('[c|C]an you suggest me a movie about (\w+[,? \w]*)\040?\??')
+    movie_theme = re.compile('can you suggest me a movie about (\w+[,? \w]*)\040?\??')
 
     global neglect
-    neglect = re.compile('[n|N]o[pe]?')
+    neglect = re.compile('no[pe]?')
 
     global affirm
-    affirm = re.compile('[Y|y]e[s|p]')
+    affirm = re.compile('ye[s|p]')
 
 
 
@@ -187,7 +181,7 @@ def main():
     # Load movie dict
     movie_dict = {}
     second_movie_dict = {}
-    with open('movie.csv') as csvfile:
+    with open('movie_db.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             movie_dict[row['question']] = row['answer']
