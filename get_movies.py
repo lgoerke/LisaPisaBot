@@ -22,7 +22,7 @@ with open('movie_db.csv', 'w', newline='') as csvfile:
 		movie_plus = '+'.join(splitted)
 		page = requests.get("http://www.omdbapi.com/?t="+ movie_plus +"&plot=full&r=xml")
 		root = etree.fromstring(page.content)
-		doc = etree.tostring(root)
+		doc = etree.tostring(root, encoding='UTF-8')
 
 		doc = doc.decode("utf-8") 
 
@@ -39,7 +39,7 @@ with open('movie_db.csv', 'w', newline='') as csvfile:
 		page = requests.get("http://www.omdbapi.com/?t="+ movie_plus +"&r=xml")
 
 		root = etree.fromstring(page.content)
-		doc = etree.tostring(root)
+		doc = etree.tostring(root, encoding='UTF-8')
 
 		doc = doc.decode("utf-8") 
 		movie_plot = re.compile('plot="(.*)" language')

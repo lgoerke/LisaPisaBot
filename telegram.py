@@ -119,7 +119,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                     text = chitchat_dict[question]
                     if name_str is not None:
                         text = text + ', ' + name_str
-                    if second_answer_dict[question] == 'qwerty':
+                    if second_answer_dict[question] == 'qwerty_bot':
                         send_message(text, chat)
                     else:
                         send_message(text, chat)
