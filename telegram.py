@@ -82,20 +82,28 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 if match:
                     question = np.random.choice(['Alternative_Greeting_Bot','Greeting_Bot'], 1, p=[0.5, 0.5])[0]
 
-                # Finding out if the user has greeted us
+                # Finding out if the user wants to know the plot of a movie
                 global movie_name
                 match = re.findall(movie_name,message)
                 if match:
                     question = match[0].lower()
                     found_movie = True
 
+                # Finding out if the user wants to know a movie with certain themes
+                global movie_theme
+                match = re.findall(movie_theme,message)
+                if match:
+                    question = match[0].lower()
+                    print(question)
+
+                # Finding out if the user neglected what was said before
                 global neglect
                 match = re.findall(neglect,message)
                 if match:
                     if start_bot:
                         question = 'Farewell_Bot'
     
-
+                # Finding out if the user affirmed what was said before
                 global affirm
                 match = re.findall(affirm,message)
                 if match:
@@ -162,7 +170,7 @@ def main():
     movie_theme = re.compile('can you suggest me a movie about (\w+[,? \w]*)\040?\??')
 
     global neglect
-    neglect = re.compile('no[pe]?')
+    neglect = re.compile('no[pe?]?')
 
     global affirm
     affirm = re.compile('ye[s|p]')
