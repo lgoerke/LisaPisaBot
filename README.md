@@ -23,3 +23,5 @@ In the following, the saved label/movie name is searched for in both databases. 
 
 ![Small Conversation Example](https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png =250x250)
 
+<img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png" width="48">
+
