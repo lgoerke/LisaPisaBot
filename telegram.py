@@ -7,6 +7,7 @@ import requests
 import time
 import csv
 import re
+import numpy as np
 from urllib import parse
 # python3: urllib.parse.quote_plus
 # python2: urllib.pathname2url
@@ -45,26 +46,74 @@ def get_last_update_id(updates):
     return max(update_ids)
 
 
-def echo_all(updates, chitchat_dict, second_answer_dict):
+def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movie_dict):
     for update in updates["result"]:
         if "message" in update:
             chat = update["message"]["chat"]["id"]
             if "text" in update["message"]:
+                message = update["message"]["text"]
+                question = message
+
                 # Finding out if the user has said his name
                 name_str = None
-                global name
-                match = re.findall(name,update["message"]["text"])
+                found_movie = False
+                global said_name
+                global start_bot
+                match = re.findall(said_name,message)
                 if match:
                     for entry in match[0]:
                         if len(entry) > 0:
                             name_str = entry
-                    question = 'Said_name'
-                else:
-                    question = update["message"]["text"]
+                    question = 'Said_name_Bot'
+                    start_bot = True
 
 
+                # Finding out if the user has asked for identity
+                global asked_name
+                match = re.findall(asked_name,message)
+                if match:
+                    question = 'Asked_name_Bot'
+                    start_bot = True
 
-                if question in chitchat_dict:
+
+                # Finding out if the user has greeted us
+                global greeting
+                match = re.findall(greeting,message)
+                if match:
+                    question = np.random.choice(['Alternative_Greeting_Bot','Greeting_Bot'], 1, p=[0.5, 0.5])[0]
+
+                # Finding out if the user has greeted us
+                global movie_name
+                match = re.findall(movie_name,message)
+                if match:
+                    question = match[0].lower()
+                    found_movie = True
+
+                global neglect
+                match = re.findall(neglect,message)
+                if match:
+                    if start_bot:
+                        question = 'Farewell_Bot'
+    
+
+                global affirm
+                match = re.findall(affirm,message)
+                if match:
+                    if start_bot:
+                        question = 'Started_Bot'
+
+
+                # Search movie dict
+                if question in movie_dict:
+                    text = movie_dict[question]
+                    if second_movie_dict[question] == 'qwerty':
+                        send_message(text, chat)
+                    else:
+                        send_message(text, chat)
+                        time.sleep(1.5)
+                        send_message(second_movie_dict[question], chat)
+                # Search chitchat dict
+                elif question in chitchat_dict:
                     text = chitchat_dict[question]
                     if name_str is not None:
                         text = text + ', ' + name_str
@@ -74,14 +123,16 @@ def echo_all(updates, chitchat_dict, second_answer_dict):
                         send_message(text, chat)
                         time.sleep(1.5)
                         send_message(second_answer_dict[question], chat)
+                
+                # Else just echo
                 else:
-                    text = question
-                    send_message(text, chat)
-                # Not echo
+                    if found_movie:
+                        send_message('I don\'t know this movie :(',chat)
+                    else:
+                        send_message(question, chat)
 
             else:
-                text = 'Stickers are not supported'
-                send_message(text, chat)
+                send_message('Stickers are not supported', chat)
 
 
 def get_last_chat_id_and_text(updates):
@@ -100,9 +151,29 @@ def send_message(text, chat_id):
 
 def main():
     # Compile regex
-    global name
-    name = re.compile('[m|M]y name is (\w+)|[i|I] am (\w+)')
+    global said_name
+    said_name = re.compile('[m|M]y name is (\w+)|[i|I] am (\w+)')
     #r'@(\w+)
+
+    global asked_name
+    asked_name = re.compile('[w|W]ho are you\040?\??|[w|W]hat are you\040?\??')
+
+    global greeting
+    greeting = re.compile('[h|H]i|[h|H]ey|[h|H]ello|[h|H]allo|[w|W]hats up')
+
+    global movie_name
+    movie_name = re.compile('[w|W]hat is (\w+[" "\w]*) about\040?\??')
+
+    global movie_theme
+    movie_theme = re.compile('[c|C]an you suggest me a movie about (\w+[,? \w]*)\040?\??')
+
+    global neglect
+    neglect = re.compile('[n|N]o[pe]?')
+
+    global affirm
+    affirm = re.compile('[Y|y]e[s|p]')
+
+
 
     # Load chitchat dict
     chitchat_dict = {}
@@ -113,12 +184,24 @@ def main():
             chitchat_dict[row['question']] = row['answer']
             second_answer_dict[row['question']] = row['second_answer']
 
+    # Load movie dict
+    movie_dict = {}
+    second_movie_dict = {}
+    with open('movie.csv') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            movie_dict[row['question']] = row['answer']
+            second_movie_dict[row['question']] = row['second_answer']
+
+    global start_bot
+    start_bot = False
+
     last_update_id = None
     while True:
         updates = get_updates(last_update_id)
         if len(updates["result"]) > 0:
             last_update_id = get_last_update_id(updates) + 1
-            echo_all(updates, chitchat_dict, second_answer_dict)
+            echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movie_dict)
         # TODO change time depending on message length
         time.sleep(2)
 
