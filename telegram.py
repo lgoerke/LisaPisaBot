@@ -2,6 +2,12 @@
 # https://www.codementor.io/garethdwyer/building-a-telegram-bot-using-python-part-1-goi5fncay
 # https://github.com/sixhobbits/python-telegram-tutorial/blob/master/part1/echobot.py
 
+import codecs
+import gensim
+import gensim.models.doc2vec as d2v
+import pandas as pd
+import html
+
 import json 
 import requests
 import time
@@ -17,6 +23,20 @@ TOKEN = config.read()
 
 # don't put this in your repo! (put in config, then import config)
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
+
+def load_movies(fname):
+    docs = pd.read_csv(fname)
+    for i, line in enumerate(docs["answer"]):
+        if i != 41:
+            line = html.unescape(html.unescape(line))
+            yield gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(line), [i])
+
+def load_names(fname):
+    docs = pd.read_csv(fname)
+    for i, line in enumerate(docs["question"]):
+        if i != 41:
+            line = html.unescape(html.unescape(line))
+            yield line
 
 
 def get_url(url):
@@ -53,6 +73,23 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
             if "text" in update["message"]:
                 message = update["message"]["text"].lower()
                 question = message.lower()
+
+                # if the user replied yes to ''
+                global asked_to_find_movie
+                global model
+                global titles
+                if asked_to_find_movie:
+                    newmov = model.infer_vector(question.split())
+                    most_sim = model.docvecs.most_similar([newmov],topn = 5)
+                    send_message('You might be interested in one of these movies:',chat)
+                    for i in range(len(most_sim)):
+                        send_message(titles[most_sim[i][0]],chat)
+
+                    asked_to_find_movie = False
+                    break
+                    # newmov = model.infer_vector()
+                    # if the user said yes to a movie recommendation
+
 
                 # Finding out if the user has said his name
                 name_str = None
@@ -109,6 +146,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 if match:
                     if start_bot:
                         question = 'Started_Bot'
+                        asked_to_find_movie = True
 
 
                 # Search movie dict
@@ -152,8 +190,31 @@ def send_message(text, chat_id):
 
 
 def main():
+
+    ## doc2vec stuff
+    global documents
+    documents = list(load_movies('movie_db.csv'))
+    
+    global titles
+    titles = list(load_names('movie_db.csv'))
+
+    global model
+    model = d2v.Doc2Vec(documents, size=100, window=8, min_count=2, workers=4)
+    assert gensim.models.doc2vec.FAST_VERSION > -1, "this will be painfully slow otherwise"
+    alpha, min_alpha = (0.025, 0.001)
+# alpha_delta = (alpha - min_alpha) / passes
+    model.alpha, model.min_alpha = alpha, alpha
+    model.train(documents)
+    ## end doc2vec stuff
+
+
+    # flag whether the person said yes to movie recommendations
+    global asked_to_find_movie
+    asked_to_find_movie = False
+
     # Compile regex
     global said_name
+
     said_name = re.compile('my name is (\w+)|i am (\w+)')
     #r'@(\w+)
 
@@ -189,7 +250,7 @@ def main():
     # Load movie dict
     movie_dict = {}
     second_movie_dict = {}
-    with open('movie_db.csv') as csvfile:
+    with codecs.open('movie_db.csv', 'r', 'utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             movie_dict[row['question']] = row['answer']
