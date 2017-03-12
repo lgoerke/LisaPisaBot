@@ -9,6 +9,9 @@ Furthermore, we hand-crafted a chit chat database containing appropriate answers
 
 ## Program Structure
 
+### doc2vec model
+When the bot starts, it loads the movie data into the Gensim doc2vec format ('load_movies_gensim()' and 'load_names_gensim()') and trains a model on the 150 long movie descriptions, using the same parameters as in the Lee dataset jupyter tutorial from Gensim (https://github.com/RaRe-Technologies/gensim/blob/develop/docs/notebooks/doc2vec-lee.ipynb)
+
 ### Regex
 We have several regex' which are used for recognizing what the user intended. They are compiled once and loaded in the function responsible for responses. In our program, the performance of the regex matching is limited to the amount of possible questions we thought of, so far there is no query expansion implemented.
 
@@ -18,6 +21,11 @@ The databases described above are loaded by reading the csv files into a python 
 ### Response function
 In the function `echo_all` the responses from the bot are generated. First, the message from the user is checked for stickers, because they do not have a text field in the json, which will make the following procedure crash otherwise. Then, the text of the message is retrieved and checked against the regex'. If one of the chit chat situations is recognized, the related label is saved and if the user mentioned his or her name, this will also be extracted. If the user asked for the description of the movie, the movie name is saved and a flag is set, so that the user can be informed if the movie is not found in the database.
 In the following, the saved label/movie name is searched for in both databases. If a movie is found, the short plot description is returned and sent by the bot. If the label is found, the belonging answer is returned and sent by the bot.
+
+### Movie Suggestion
+The boolean flag 'asked_to_find_movie' is added to track whether the person answered YES to the 'START_BOT' question ("Do you want me to help you with deciding on a movie?"); any response after the user's YES is passed to a Gensim doc2vec model (https://radimrehurek.com/gensim/models/doc2vec.html) trained on the 150 long movie descriptions in the database.
+
+The model infers a new vector for the user text, and returns the titles of the top 5 most similar movie-text-vectors.
 
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png" width="250 alt="Small Conversation Example"> 
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png" width="250" alt="Small Conversation Example">

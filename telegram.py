@@ -24,14 +24,14 @@ TOKEN = config.read()
 # don't put this in your repo! (put in config, then import config)
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
-def load_movies(fname):
+def load_movies_gensim(fname):
     docs = pd.read_csv(fname)
     for i, line in enumerate(docs["answer"]):
         if i != 41:
             line = html.unescape(html.unescape(line))
             yield gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(line), [i])
 
-def load_names(fname):
+def load_names_gensim(fname):
     docs = pd.read_csv(fname)
     for i, line in enumerate(docs["question"]):
         if i != 41:
@@ -74,13 +74,18 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 message = update["message"]["text"].lower()
                 question = message.lower()
 
-                # if the user replied yes to ''
+                # GENSIM STUFF
+                # if the user replied yes to:
+                # "Do you want me to help you with deciding on a movie?"
                 global asked_to_find_movie
                 global model
                 global titles
                 if asked_to_find_movie:
+                    # infer the vector for the user generated text
                     newmov = model.infer_vector(question.split())
+                    # find the 5 most similar movies in the database
                     most_sim = model.docvecs.most_similar([newmov],topn = 5)
+                    # send them to the user
                     send_message('You might be interested in one of these movies:',chat)
                     for i in range(len(most_sim)):
                         send_message(titles[most_sim[i][0]],chat)
@@ -193,16 +198,19 @@ def main():
 
     ## doc2vec stuff
     global documents
-    documents = list(load_movies('movie_db.csv'))
+    # load movies into Gensim format
+    documents = list(load_movies_gensim('movie_db.csv'))
     
+    # load titles in the same order as Gensim vectors
     global titles
-    titles = list(load_names('movie_db.csv'))
+    titles = list(load_names_gensim('movie_db.csv'))
 
+    # Define and train Gensim doc2vec model on the movie descriptions
+    # using parameters from the Gensim Lee dataset jupyter tutorial
     global model
     model = d2v.Doc2Vec(documents, size=100, window=8, min_count=2, workers=4)
     assert gensim.models.doc2vec.FAST_VERSION > -1, "this will be painfully slow otherwise"
     alpha, min_alpha = (0.025, 0.001)
-# alpha_delta = (alpha - min_alpha) / passes
     model.alpha, model.min_alpha = alpha, alpha
     model.train(documents)
     ## end doc2vec stuff
