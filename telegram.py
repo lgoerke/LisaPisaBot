@@ -80,6 +80,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 global asked_to_find_movie
                 global model
                 global titles
+                global documents
                 if asked_to_find_movie:
                     # infer the vector for the user generated text
                     newmov = model.infer_vector(question.split())
@@ -88,7 +89,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                     # send them to the user
                     send_message('You might be interested in one of these movies:',chat)
                     for i in range(len(most_sim)):
-                        send_message(titles[most_sim[i][0]],chat)
+                        send_message(" - "+titles[most_sim[i][0]]+" - \n"+second_movie_dict[titles[most_sim[i][0]]],chat)
 
                     asked_to_find_movie = False
                     break
