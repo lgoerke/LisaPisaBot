@@ -28,7 +28,7 @@ If the user asks for a movie about certain keywords, those keywords will be feed
 The model infers a new vector for the user text, and returns the titles of the top 5 most similar movie-text-vectors.
 
 ## Examples
-<img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png" width="270 alt="Small Conversation Example"> 
+<img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png" width="270" alt="Small Conversation Example"> 
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png" width="270" alt="Small Conversation Example">
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot03.png" width="270" alt="Small Conversation Example">
 
