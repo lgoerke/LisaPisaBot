@@ -5,3 +5,5 @@ Asked_name_Bot,My name is LisaPisa,I can help you with deciding on a movie tonig
 Said_name_Bot,Nice to meet you,Do you want me to help you with deciding on a movie?
 Farewell_Bot,"Okay, talk to you later",qwerty_bot
 Started_Bot,Nice,"You can either ask what a certain movie is about or give me a couple of words/themes and I will find one for you"
+Thanking_Bot,"You are very welcome",qwerty_bot
+Alternative_Thanking_Bot,"No problem at all",qwerty_bot

@@ -74,32 +74,10 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 message = update["message"]["text"].lower()
                 question = message.lower()
 
-                # GENSIM STUFF
-                # if the user replied yes to:
-                # "Do you want me to help you with deciding on a movie?"
-                global asked_to_find_movie
-                global model
-                global titles
-                global documents
-                if asked_to_find_movie:
-                    # infer the vector for the user generated text
-                    newmov = model.infer_vector(question.split())
-                    # find the 5 most similar movies in the database
-                    most_sim = model.docvecs.most_similar([newmov],topn = 5)
-                    # send them to the user
-                    send_message('You might be interested in one of these movies:',chat)
-                    for i in range(len(most_sim)):
-                        send_message(" - "+titles[most_sim[i][0]]+" - \n"+second_movie_dict[titles[most_sim[i][0]]],chat)
-
-                    asked_to_find_movie = False
-                    break
-                    # newmov = model.infer_vector()
-                    # if the user said yes to a movie recommendation
-
-
                 # Finding out if the user has said his name
                 name_str = None
                 found_movie = False
+                asked_to_find_movie = False
                 global said_name
                 global start_bot
                 match = re.findall(said_name,message)
@@ -137,7 +115,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 match = re.findall(movie_theme,message)
                 if match:
                     question = match[0].lower()
-                    print(question)
+                    asked_to_find_movie = True
 
                 # Finding out if the user neglected what was said before
                 global neglect
@@ -152,17 +130,42 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 if match:
                     if start_bot:
                         question = 'Started_Bot'
-                        asked_to_find_movie = True
 
+                global thanking
+                match = re.findall(thanking,message)
+                if match:
+                    question = np.random.choice(['Alternative_Thanking_Bot','Thanking_Bot'], 1, p=[0.5, 0.5])[0]
 
+                # GENSIM STUFF
+                # if the user replied yes to:
+                # "Do you want me to help you with deciding on a movie?"
+                global model
+                global titles
+                global documents
+                if asked_to_find_movie:
+                    # infer the vector for the user generated text
+                    newmov = model.infer_vector(question.split())
+                    # find the 5 most similar movies in the database
+                    most_sim = model.docvecs.most_similar([newmov],topn = 5)
+                    # send them to the user
+                    send_message('You might be interested in one of these movies:',chat)
+                    time.sleep(1)
+                    for i in range(len(most_sim)):
+                        send_message(" - "+titles[most_sim[i][0]].title()+" - \n"+second_movie_dict[titles[most_sim[i][0]]],chat)
+                        time.sleep(1)
+
+                    asked_to_find_movie = False
+                    break
+                    # newmov = model.infer_vector()
+                    # if the user said yes to a movie recommendation
                 # Search movie dict
-                if question in movie_dict:
+                elif question in movie_dict:
                     send_message(second_movie_dict[question], chat)
                 # Search chitchat dict
                 elif question in chitchat_dict:
                     text = chitchat_dict[question]
                     if name_str is not None:
-                        text = text + ', ' + name_str
+                        text = text + ', ' + name_str.title()
                     if second_answer_dict[question] == 'qwerty_bot':
                         send_message(text, chat)
                     else:
@@ -175,7 +178,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                     if found_movie:
                         send_message('I don\'t know this movie :(',chat)
                     else:
-                        send_message(question, chat)
+                        send_message(question.title(), chat)
 
             else:
                 send_message('Stickers are not supported', chat)
@@ -216,14 +219,8 @@ def main():
     model.train(documents)
     ## end doc2vec stuff
 
-
-    # flag whether the person said yes to movie recommendations
-    global asked_to_find_movie
-    asked_to_find_movie = False
-
     # Compile regex
     global said_name
-
     said_name = re.compile('my name is (\w+)|i am (\w+)')
     #r'@(\w+)
 
@@ -245,6 +242,8 @@ def main():
     global affirm
     affirm = re.compile('ye[s|p]')
 
+    global thanking
+    thanking = re.compile('thank [you]?|thx|thanks')
 
 
     # Load chitchat dict
