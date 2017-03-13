@@ -30,6 +30,6 @@ The model infers a new vector for the user text, and returns the titles of the t
 ## Examples
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png" width="270" alt="Small Conversation Example"> 
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png" width="270" alt="Small Conversation Example">
-<img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot03.png" width="270" alt="Small Conversation Example">
+<img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot42.png" width="270" alt="Small Conversation Example">
 
 ## Future Outlook
