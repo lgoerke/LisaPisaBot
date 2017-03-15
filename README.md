@@ -34,4 +34,4 @@ With a couple steps of gradient descent (more on that during the doc2vec present
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot42.png" width="270" alt="Small Conversation Example">
 
 ## Future Outlook
-While the bot is insensitive to misspellings of movie names, the user must enter fairly specific keywords in order to trigger a particular bot behavior. A future implementation might elevate this by using some combination of look-up and word embeddings; by comparing an embedding of user input to several predefined response-embeddings, the closest behavior might be identified and triggered.
+While the bot is insensitive to misspellings of movie names, the user must enter fairly specific keywords in order to trigger a particular bot behavior. A future implementation might alleviate this by using some combination of look-up and word embeddings; by comparing an embedding of user input to several predefined response-embeddings, the closest behavior might be identified and triggered.
