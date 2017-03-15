@@ -39,7 +39,7 @@ With a couple steps of gradient descent (more on that during the doc2vec present
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png" width="270" alt="Small Conversation Example"> 
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png" width="270" alt="Small Conversation Example">
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot42.png" width="270" alt="Small Conversation Example">
-#<img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot23.png" width="270" alt="Small Conversation Example">
+<!--img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot23.png" width="270" alt="Small Conversation Example" -->
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot99.png" width="270" alt="Small Conversation Example">
 
 ## Future Outlook
