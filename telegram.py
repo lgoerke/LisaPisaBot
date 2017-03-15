@@ -186,10 +186,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                     # newmov = model.infer_vector()
                     # if the user said yes to a movie recommendation
 
-                # Search movie dict
-                # question is the query for algolia
-                ## TODO: instead of if q in movie_dict check algolia and return first / sensible hit(s)
-
+                # Search movie on algolia
                 global asked_about_movie
                 global movie_list
                 if found_movie:
