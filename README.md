@@ -1,12 +1,6 @@
 # LisaPisaBot
-## NOTE:
-In order to run this bot, please first run the 'train-model.py' script, which trains the model that the bot later uses.
-
 ## Datasets Used
-
-# TODO describe the new dataset!
-
-First, we created a database of the top 150 movies from [IMDB](http://www.imdb.com/). For that, we used the API provided through [Open Movie Database](http://www.omdbapi.com/) to get a short and a long plot version. Those are then saved into a csv file with the movie title in the first column, followed by the long plot description, and the short plot description in the last column.
+In order to teach our bot about movies (to feed into the doc2vec model for movie recommendation, and to populate the bots mental library of movie synopsi), we provided it with a dataset of movie titles and plots, obtained from IMDB's [Alternative Interfaces](http://www.imdb.com/interfaces) collection. After discarding all the movies with a rating <5 (to make the number of movies manageable, and the quality of movies at least passable), we are left with 110855 movies with which to educate our bot. These are stored in a .csv file which is read at model-train time, as well as at run-time in order to match recommended movies to their titles. The CSV file consists of 5 columns: | Index | Title | Year | Plot | Rating |. Currently, our bot only makes use of Title and Plot.
 
 The movie dataset was also uploaded to [Algolia](www.algolia.com), a service providing fast results for fuzzy search. Uploaded data is indexed and search can be conducted via an API. A ranked list of search results is then given back and can be integrated into the bot.
 
@@ -30,8 +24,9 @@ In the following, the saved label is searched for in the chitchat database. If t
 If the user asked for the description of a movie, the movie name is saved and a flag is set, so that the user can be informed if the movie is not found in the database. The movie name is then combined to an API call to Algolia and sent to the server. From the resulting ranked list of movies, the first one is chosen and the plot is extracted and shown in the answer message.
 
 ### Movie Suggestion
-If the user asks for a movie about certain keywords, those keywords will be feed into a [Gensim doc2vec model](https://radimrehurek.com/gensim/models/doc2vec.html) trained on the 150 long movie descriptions in the database.
-The model infers a new vector for the user text, and returns the titles of the top 5 most similar movie-text-vectors.
+If the user asks for a movie about certain keywords, those keywords are fed into a [Gensim doc2vec model](https://radimrehurek.com/gensim/models/doc2vec.html) trained on the 110855 movie plots in the database.
+
+With a couple steps of gradient descent (more on that during the doc2vec presentation), the model infers a new vector for the user text, calculates the cosine between this vector and those learned by the model, and finally returns the titles and synopsi of the movies corresponding to the top 5 most similar movie-text-vectors.
 
 ## Examples
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png" width="270" alt="Small Conversation Example"> 
