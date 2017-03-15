@@ -13,7 +13,7 @@ def load_movies(fname):
 		yield gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(line), [i])
 
 # save the Gensim formatted documents in a list
-documents = list(load_movies("movie_db.csv"))
+documents = list(load_movies("moremovies_ge5.csv"))
 # define the model
 model = d2v.Doc2Vec(documents, size=100, window=8, min_count=2, workers=4)
 # make sure we have the fast version of gensim's doc2vec!
@@ -24,5 +24,7 @@ alpha = 0.025
 model.alpha, model.min_alpha = alpha, alpha
 # train the model! Should take around 5 minutes
 model.train(documents)
+print("MODEL TRAINED")
 # save the trained model to disk, for loading into the bot
 model.save("doc2vec_ge5_model")
+print("MODEL SAVED")
