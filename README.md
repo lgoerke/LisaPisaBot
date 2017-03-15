@@ -14,7 +14,7 @@ The bot uses a pretrained doc2vec model (trained using train-model.py). The mode
 We have several regex' which are used for recognizing what the user intended. They are compiled once and loaded in the function responsible for responses. In our program, the performance of the regex matching is limited to the amount of possible questions we thought of, so far there is no query expansion implemented.
 
 ### Databases
-The databases described above are loaded by reading the csv files into a python dictionary.
+The chitchat database described above is loaded by reading the csv files into a python dictionary. The movie database will be accessed via the Algolia API.
 
 ### Response function
 In the function `echo_all` the responses from the bot are generated. First, the message from the user is checked for stickers, because they do not have a text field in the json, which will make the following procedure crash otherwise. Then, the text of the message is retrieved and checked against the regex'. If one of the chit chat situations is recognized, the related label is saved and if the user mentioned his or her name, this will also be extracted.
