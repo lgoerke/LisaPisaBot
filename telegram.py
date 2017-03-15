@@ -234,7 +234,7 @@ def main():
     movie_name = re.compile('what is (\w+[" "\w]*) about\040?\??')
 
     global movie_theme
-    movie_theme = re.compile('can you suggest me a movie about (\w+[,? \w]*)\040?\??')
+    movie_theme = re.compile('[can you recommend a movie about|can you suggest me a movie about] (\w+[,? \w]*)\040?\??')
 
     global neglect
     neglect = re.compile('no[pe?]?')
