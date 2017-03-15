@@ -21,7 +21,7 @@ In the function `echo_all` the responses from the bot are generated. First, the 
 In the following, the saved label is searched for in the chitchat database. If the label is found, the belonging answer is returned and sent by the bot. Otherwise, the user's input will be echoed.
 
 ### Movie Description
-If the user asked for the description of a movie, the movie name is saved and a flag is set, so that the user can be informed if the movie is not found in the database. The movie name is then combined to an API call to Algolia and sent to the server. From the resulting ranked list of movies, the first one is chosen and the plot is extracted and shown in the answer message.
+If the user asked for the description of a movie, the movie name is saved and a flag is set, so that the user can be informed if the movie is not found in the database. The movie name is then combined to an API call to Algolia and sent to the server. From the resulting ranked list of movies, the user is asked to confirm if he or she meant the found movie. When the user confirms his or her selection, the plot is displayed.
 
 ### Movie Suggestion
 If the user asks for a movie about certain keywords, those keywords are fed into a [Gensim doc2vec model](https://radimrehurek.com/gensim/models/doc2vec.html) trained on the 110855 movie plots in the database.
@@ -32,6 +32,7 @@ With a couple steps of gradient descent (more on that during the doc2vec present
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot01.png" width="270" alt="Small Conversation Example"> 
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot02.png" width="270" alt="Small Conversation Example">
 <img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot42.png" width="270" alt="Small Conversation Example">
+<img src="https://github.com/lgoerke/LisaPisaBot/blob/master/figures/screenshot23.png" width="270" alt="Small Conversation Example">
 
 ## Future Outlook
 While the bot is insensitive to misspellings of movie names, the user must enter fairly specific keywords in order to trigger a particular bot behavior. A future implementation might alleviate this by using some combination of look-up and word embeddings; by comparing an embedding of user input to several predefined response-embeddings, the closest behavior might be identified and triggered.
