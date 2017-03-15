@@ -193,31 +193,32 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 global asked_about_movie
                 global movie_list
                 if found_movie:
-                    if len(index.search(moviequery)['hits']) != 0:
-                        reply = str(index.search(moviequery)['hits'][0]['title']) + '?'
+                    movie_list = index.search(moviequery)['hits']
+                    if len(movie_list) != 0:
+                        reply = movie_list[0]['title'] + '?'
                         send_message(reply, chat)
                         asked_about_movie = True
+                        found_movie = False
                         print('asked_about_movie: ' + str(asked_about_movie))
                         movie_list = index.search(moviequery)['hits']
-
                 # Finding out if the user affirmed what was said before
-                global affirm
-                global neglect
-                if asked_about_movie:
+                elif asked_about_movie:
                     print('asked about movie.')
                     match = re.findall(affirm, message)
                     if match:
                         print('user affirmed.')
-                        reply = str(index.search(moviequery)['hits'][0]['plot'])
+                        print('Movie list has len',len(movie_list))
+                        reply = movie_list[0]['plot']
+                        reply = reply[0:500] + '...'
                         send_message(reply, chat)
-                        movie_found = True
+                        asked_about_movie = False
                     match = re.findall(neglect, message)
                     if match:
                         print('user said no, try next movie.')
-                        reply = str(index.search(moviequery)['hits'][1]['plot'])
+                        movie_list.pop(0)
+                        print('Movie list has len',len(movie_list))
+                        reply = movie_list[0]['title'] + '?'
                         send_message(reply, chat)
-
-
 
                 # Search chitchat dict
                 elif question in chitchat_dict:
