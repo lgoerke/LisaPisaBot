@@ -24,19 +24,17 @@ TOKEN = config.read()
 # don't put this in your repo! (put in config, then import config)
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
-def load_movies_gensim(fname):
-    docs = pd.read_csv(fname)
-    for i, line in enumerate(docs["answer"]):
-        if i != 41:
-            line = html.unescape(html.unescape(line))
-            yield gensim.models.doc2vec.TaggedDocument(gensim.utils.simple_preprocess(line), [i])
+def load_gensim_data(fname):
+    plots = []
+    titles = []
+    movies = pd.read_csv(fname, encoding = 'utf-8')
+    for i in range(len(movies)):
+        plot = html.unescape(html.unescape(movies['plot'][i]))
+        plots.append(plot)
+        title = html.unescape(html.unescape(movies['title'][i]))
+        titles.append(title)
 
-def load_names_gensim(fname):
-    docs = pd.read_csv(fname)
-    for i, line in enumerate(docs["question"]):
-        if i != 41:
-            line = html.unescape(html.unescape(line))
-            yield line
+    return [titles, plots]
 
 
 def get_url(url):
@@ -139,8 +137,12 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 # GENSIM STUFF
                 # if the user replied yes to:
                 # "Do you want me to help you with deciding on a movie?"
+                # GENSIM STUFF
+                # if the user replied yes to:
+                # "Do you want me to help you with deciding on a movie?"
                 global model
                 global titles
+                global plots
                 global documents
                 if asked_to_find_movie:
                     # infer the vector for the user generated text
@@ -151,7 +153,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                     send_message('You might be interested in one of these movies:',chat)
                     time.sleep(1)
                     for i in range(len(most_sim)):
-                        send_message(" - "+titles[most_sim[i][0]].title()+" - \n"+second_movie_dict[titles[most_sim[i][0]]],chat)
+                        send_message(" - "+titles[most_sim[i][0]].title()+" - \n"+plots[most_sim[i][0]],chat)
                         time.sleep(1)
 
                     asked_to_find_movie = False
@@ -201,24 +203,25 @@ def send_message(text, chat_id):
 def main():
 
     ## doc2vec stuff
-    global documents
-    # load movies into Gensim format
-    documents = list(load_movies_gensim('movie_db.csv'))
-    
     # load titles in the same order as Gensim vectors
     global titles
-    titles = list(load_names_gensim('movie_db.csv'))
+    global plots
+    [titles, plots] = load_gensim_data('moremovies_ge5.csv')
+
+    print("DATA LOADED")
 
     # Define and train Gensim doc2vec model on the movie descriptions
     # using parameters from the Gensim Lee dataset jupyter tutorial
     global model
-    model = d2v.Doc2Vec(documents, size=100, window=8, min_count=2, workers=4)
+    model = d2v.Doc2Vec.load('doc2vec_ge5_model')
+    print("MODEL LOADED")
+    # model = d2v.Doc2Vec(documents, size=100, window=8, min_count=2, workers=4)
     assert gensim.models.doc2vec.FAST_VERSION > -1, "this will be painfully slow otherwise"
-    alpha, min_alpha = (0.025, 0.001)
-    model.alpha, model.min_alpha = alpha, alpha
-    model.train(documents)
+    # alpha, min_alpha = (0.025, 0.001)
+    # model.alpha, model.min_alpha = alpha, alpha
+    # model.train(documents)
     ## end doc2vec stuff
-
+    
     # Compile regex
     global said_name
     said_name = re.compile('my name is (\w+)|i am (\w+)')
