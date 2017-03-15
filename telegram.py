@@ -80,6 +80,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 global start_bot
                 match = re.findall(said_name,message)
                 if match:
+                    print('Said_name')
                     for entry in match[0]:
                         if len(entry) > 0:
                             name_str = entry
@@ -91,6 +92,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 global asked_name
                 match = re.findall(asked_name,message)
                 if match:
+                    print('Asked_name')
                     question = 'Asked_name_Bot'
                     start_bot = True
 
@@ -99,19 +101,30 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 global greeting
                 match = re.findall(greeting,message)
                 if match:
+                    print('Greeting')
                     question = np.random.choice(['Alternative_Greeting_Bot','Greeting_Bot'], 1, p=[0.5, 0.5])[0]
 
                 # Finding out if the user wants to know the plot of a movie
                 global movie_name
                 match = re.findall(movie_name,message)
                 if match:
+                    print('Movie_name')
                     question = match[0].lower()
                     found_movie = True
 
                 # Finding out if the user wants to know a movie with certain themes
-                global movie_theme
-                match = re.findall(movie_theme,message)
+                global movie_theme1
+                match = re.findall(movie_theme1,message)
                 if match:
+                    print('Movie_theme')
+                    question = match[0].lower()
+                    asked_to_find_movie = True
+
+                # Finding out if the user wants to know a movie with certain themes
+                global movie_theme2
+                match = re.findall(movie_theme2,message)
+                if match:
+                    print('Movie_theme')
                     question = match[0].lower()
                     asked_to_find_movie = True
 
@@ -119,6 +132,7 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 global neglect
                 match = re.findall(neglect,message)
                 if match:
+                    print('Neglect')
                     if start_bot:
                         question = 'Farewell_Bot'
     
@@ -126,12 +140,14 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 global affirm
                 match = re.findall(affirm,message)
                 if match:
+                    print('Affirm')
                     if start_bot:
                         question = 'Started_Bot'
 
                 global thanking
                 match = re.findall(thanking,message)
                 if match:
+                    print('Thanking')
                     question = np.random.choice(['Alternative_Thanking_Bot','Thanking_Bot'], 1, p=[0.5, 0.5])[0]
 
                 # GENSIM STUFF
@@ -236,8 +252,10 @@ def main():
     global movie_name
     movie_name = re.compile('what is (\w+[" "\w]*) about\040?\??')
 
-    global movie_theme
-    movie_theme = re.compile('[can you recommend a movie about|can you suggest me a movie about] (\w+[,? \w]*)\040?\??')
+    global movie_theme1
+    movie_theme1 = re.compile('can you recommend a movie about (\w+[,? \w]*)\040?\??')
+    global movie_theme2
+    movie_theme2 = re.compile('can you suggest me a movie about (\w+[,? \w]*)\040?\??')
 
     global neglect
     neglect = re.compile('no[pe?]?')
