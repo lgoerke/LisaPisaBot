@@ -8,26 +8,39 @@ import gensim.models.doc2vec as d2v
 import pandas as pd
 import html
 
-import json 
+import json
 import requests
 import time
 import csv
 import re
 import numpy as np
 from urllib import parse
+
+from algoliasearch import algoliasearch
+
 # python3: urllib.parse.quote_plus
 # python2: urllib.pathname2url
 
-config = open('config.txt', 'r') 
-TOKEN = config.read() 
+config = open('config.txt', 'r')
+TOKEN = config.read()
+
+algolia = open('config_search.txt', 'r')
+algoliaTOKEN = algolia.read()
+TOKEN1 = algoliaTOKEN.split()[0]
+TOKEN2 = algoliaTOKEN.split()[1]
+
+client = algoliasearch.Client(TOKEN1, TOKEN2)
+index = client.init_index("ratedmovies_ge5")
+
 
 # don't put this in your repo! (put in config, then import config)
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
+
 def load_gensim_data(fname):
     plots = []
     titles = []
-    movies = pd.read_csv(fname, encoding = 'utf-8')
+    movies = pd.read_csv(fname, encoding='utf-8')
     for i in range(len(movies)):
         plot = html.unescape(html.unescape(movies['plot'][i]))
         plots.append(plot)
@@ -76,9 +89,10 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                 name_str = None
                 found_movie = False
                 asked_to_find_movie = False
+                right_movie = False
                 global said_name
                 global start_bot
-                match = re.findall(said_name,message)
+                match = re.findall(said_name, message)
                 if match:
                     print('Said_name')
                     for entry in match[0]:
@@ -87,29 +101,27 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                     question = 'Said_name_Bot'
                     start_bot = True
 
-
                 # Finding out if the user has asked for identity
                 global asked_name
-                match = re.findall(asked_name,message)
+                match = re.findall(asked_name, message)
                 if match:
                     print('Asked_name')
                     question = 'Asked_name_Bot'
                     start_bot = True
 
-
                 # Finding out if the user has greeted us
                 global greeting
-                match = re.findall(greeting,message)
+                match = re.findall(greeting, message)
                 if match:
                     print('Greeting')
                     question = np.random.choice(['Alternative_Greeting_Bot','Greeting_Bot'], 1, p=[0.5, 0.5])[0]
 
                 # Finding out if the user wants to know the plot of a movie
                 global movie_name
-                match = re.findall(movie_name,message)
+                global moviequery
+                match = re.findall(movie_name, message)
                 if match:
-                    print('Movie_name')
-                    question = match[0].lower()
+                    moviequery = match[0].lower()
                     found_movie = True
 
                 # Finding out if the user wants to know a movie with certain themes
@@ -130,29 +142,26 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
 
                 # Finding out if the user neglected what was said before
                 global neglect
-                match = re.findall(neglect,message)
+                match = re.findall(neglect, message)
                 if match:
                     print('Neglect')
                     if start_bot:
                         question = 'Farewell_Bot'
-    
+
                 # Finding out if the user affirmed what was said before
                 global affirm
-                match = re.findall(affirm,message)
+                match = re.findall(affirm, message)
                 if match:
                     print('Affirm')
                     if start_bot:
                         question = 'Started_Bot'
 
                 global thanking
-                match = re.findall(thanking,message)
+                match = re.findall(thanking, message)
                 if match:
                     print('Thanking')
                     question = np.random.choice(['Alternative_Thanking_Bot','Thanking_Bot'], 1, p=[0.5, 0.5])[0]
 
-                # GENSIM STUFF
-                # if the user replied yes to:
-                # "Do you want me to help you with deciding on a movie?"
                 # GENSIM STUFF
                 # if the user replied yes to:
                 # "Do you want me to help you with deciding on a movie?"
@@ -164,21 +173,52 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                     # infer the vector for the user generated text
                     newmov = model.infer_vector(question.split())
                     # find the 5 most similar movies in the database
-                    most_sim = model.docvecs.most_similar([newmov],topn = 5)
+                    most_sim = model.docvecs.most_similar([newmov], topn=5)
                     # send them to the user
-                    send_message('You might be interested in one of these movies:',chat)
+                    send_message('You might be interested in one of these movies:', chat)
                     time.sleep(1)
                     for i in range(len(most_sim)):
-                        send_message(" - "+titles[most_sim[i][0]].title()+" - \n"+plots[most_sim[i][0]],chat)
+                        send_message(" - " + titles[most_sim[i][0]].title() + " - \n" + plots[most_sim[i][0]], chat)
                         time.sleep(1)
 
                     asked_to_find_movie = False
                     break
                     # newmov = model.infer_vector()
                     # if the user said yes to a movie recommendation
+
                 # Search movie dict
-                elif question in movie_dict:
-                    send_message(second_movie_dict[question], chat)
+                # question is the query for algolia
+                ## TODO: instead of if q in movie_dict check algolia and return first / sensible hit(s)
+
+                global asked_about_movie
+                global movie_list
+                if found_movie:
+                    if len(index.search(moviequery)['hits']) != 0:
+                        reply = str(index.search(moviequery)['hits'][0]['title']) + '?'
+                        send_message(reply, chat)
+                        asked_about_movie = True
+                        print('asked_about_movie: ' + str(asked_about_movie))
+                        movie_list = index.search(moviequery)['hits']
+
+                # Finding out if the user affirmed what was said before
+                global affirm
+                global neglect
+                if asked_about_movie:
+                    print('asked about movie.')
+                    match = re.findall(affirm, message)
+                    if match:
+                        print('user affirmed.')
+                        reply = str(index.search(moviequery)['hits'][0]['plot'])
+                        send_message(reply, chat)
+                        movie_found = True
+                    match = re.findall(neglect, message)
+                    if match:
+                        print('user said no, try next movie.')
+                        reply = str(index.search(moviequery)['hits'][1]['plot'])
+                        send_message(reply, chat)
+
+
+
                 # Search chitchat dict
                 elif question in chitchat_dict:
                     text = chitchat_dict[question]
@@ -190,11 +230,11 @@ def echo_all(updates, chitchat_dict, second_answer_dict, movie_dict, second_movi
                         send_message(text, chat)
                         time.sleep(1.5)
                         send_message(second_answer_dict[question], chat)
-                
+
                 # Else just echo
                 else:
                     if found_movie:
-                        send_message('I don\'t know this movie :(',chat)
+                        send_message('I don\'t know this movie :(', chat)
                     else:
                         send_message(question.title(), chat)
 
@@ -211,13 +251,12 @@ def get_last_chat_id_and_text(updates):
 
 
 def send_message(text, chat_id):
-    text = parse.quote_plus(text) # urllib.parse.quote_plus(text) # (python3)
+    text = parse.quote_plus(text)  # urllib.parse.quote_plus(text) # (python3)
     url = URL + "sendMessage?text={}&chat_id={}".format(text, chat_id)
     get_url(url)
 
 
 def main():
-
     ## doc2vec stuff
     # load titles in the same order as Gensim vectors
     global titles
@@ -237,11 +276,11 @@ def main():
     # model.alpha, model.min_alpha = alpha, alpha
     # model.train(documents)
     ## end doc2vec stuff
-    
+
     # Compile regex
     global said_name
     said_name = re.compile('my name is (\w+)|i am (\w+)')
-    #r'@(\w+)
+    # r'@(\w+)
 
     global asked_name
     asked_name = re.compile('who are you\040?\??|what are you\040?\??')
@@ -266,7 +305,6 @@ def main():
     global thanking
     thanking = re.compile('thank [you]?|thx|thanks')
 
-
     # Load chitchat dict
     chitchat_dict = {}
     second_answer_dict = {}
@@ -287,6 +325,16 @@ def main():
 
     global start_bot
     start_bot = False
+    global asked_about_movie
+    asked_about_movie = False
+    #global right_movie
+    #right_movie = False
+
+    global movie_list
+    movie_list = []
+
+    global moviequery
+    moviequery = 'noooooosingleresult!'
 
     last_update_id = None
     while True:
